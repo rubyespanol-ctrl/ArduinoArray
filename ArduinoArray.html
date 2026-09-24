@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Arduino Arrays: Understanding Indexing</title>
+<style>
+  :root{
+    --bg:#EEF3F4;
+    --panel:#FFFFFF;
+    --ink:#16323A;
+    --ink-soft:#4B6067;
+    --teal:#00838F;
+    --teal-dark:#005F6B;
+    --amber:#F5A623;
+    --good:#2E7D32;
+    --good-bg:#E8F5E9;
+    --bad:#C62828;
+    --bad-bg:#FDECEA;
+    --rail:#D8E3E4;
+    --code-bg:#0F2A30;
+    --code-ink:#CFEFEA;
+    --code-num:#8FD8CE;
+  }
+  :root:not([data-theme="light"]){ }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0E1B1E;
+      --panel:#132A2E;
+      --ink:#EAF4F4;
+      --ink-soft:#A9C2C4;
+      --rail:#274347;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0E1B1E;
+    --panel:#132A2E;
+    --ink:#EAF4F4;
+    --ink-soft:#A9C2C4;
+    --rail:#274347;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-padding-top: env(safe-area-inset-top,0px); }
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{
+    max-width:780px;
+    margin:0 auto;
+    padding:28px 20px 60px;
+  }
+
+  header{ margin-bottom:22px; }
+  .eyebrow{
+    display:inline-block;
+    font-size:13px;
+    color:var(--teal-dark);
+    background:rgba(0,131,143,0.1);
+    padding:4px 10px;
+    border-radius:20px;
+    margin-bottom:10px;
+    font-weight:600;
+  }
+  h1{
+    font-size:clamp(24px,5vw,32px);
+    line-height:1.2;
+    margin:0 0 8px;
+    font-weight:800;
+    letter-spacing:-0.01em;
+  }
+  .sub{
+    color:var(--ink-soft);
+    font-size:16px;
+    line-height:1.5;
+    margin:0;
+    max-width:62ch;
+  }
+
+  section{ margin-top:26px; }
+
+  .card{
+    background:var(--panel);
+    border-radius:14px;
+    padding:20px;
+    box-shadow:0 1px 3px rgba(15,42,48,0.08), 0 1px 2px rgba(15,42,48,0.05);
+  }
+
+  .code{
+    background:var(--code-bg);
+    color:var(--code-ink);
+    border-radius:12px;
+    padding:16px 18px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:14px;
+    overflow-x:auto;
+    white-space:pre;
+  }
+  .code .kw{ color:#7FB8FF; }
+  .code .num{ color:var(--code-num); }
+  .code .name{ color:#FFD98E; }
+
+  .explain{
+    font-size:15px;
+    line-height:1.65;
+    color:var(--ink);
+    margin-top:14px;
+  }
+  .explain strong{ color:var(--teal-dark); }
+
+  h2{
+    font-size:19px;
+    margin:0 0 4px;
+    font-weight:750;
+  }
+  .h2-note{
+    color:var(--ink-soft);
+    font-size:14px;
+    margin:0 0 16px;
+  }
+
+  /* Array visualization */
+  .array-shell{
+    overflow-x:auto;
+    padding:6px 2px 14px;
+  }
+  .array-row{
+    display:flex;
+    gap:0;
+    min-width:min-content;
+    justify-content:center;
+  }
+  .cell{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    flex:0 0 auto;
+  }
+  .idx-label{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .box{
+    width:64px;
+    height:64px;
+    border:2px solid var(--rail);
+    background:var(--bg);
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:20px;
+    font-weight:700;
+    cursor:pointer;
+    color:var(--ink);
+    transition:transform .12s ease, border-color .12s ease, background .12s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .box:hover{ border-color:var(--teal); transform:translateY(-2px); }
+  .box:focus-visible{ outline:3px solid var(--teal); outline-offset:2px; }
+  .box.selected{
+    background:var(--teal);
+    border-color:var(--teal-dark);
+    color:#fff;
+    transform:translateY(-2px);
+  }
+  .rail{
+    width:14px;
+    height:2px;
+    background:var(--rail);
+    align-self:center;
+    margin-top:35px;
+  }
+
+  .readout{
+    margin-top:18px;
+    border-radius:10px;
+    padding:14px 16px;
+    background:var(--bg);
+    border:1px dashed var(--rail);
+    font-size:15px;
+    min-height:24px;
+    color:var(--ink-soft);
+  }
+  .readout .hit{
+    color:var(--ink);
+    font-weight:600;
+  }
+  .readout code{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    background:rgba(0,131,143,0.1);
+    padding:2px 6px;
+    border-radius:6px;
+    color:var(--teal-dark);
+  }
+
+  /* Quiz */
+  .q-card{ margin-top:16px; }
+  .q-title{
+    font-weight:700;
+    font-size:15px;
+    margin-bottom:12px;
+  }
+  .q-num{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:22px;height:22px;
+    border-radius:50%;
+    background:var(--teal);
+    color:#fff;
+    font-size:12px;
+    font-weight:700;
+    margin-right:8px;
+  }
+  .opts{ display:flex; flex-direction:column; gap:8px; }
+  .opt{
+    text-align:left;
+    padding:11px 14px;
+    border-radius:10px;
+    border:1.5px solid var(--rail);
+    background:var(--panel);
+    color:var(--ink);
+    font-size:14.5px;
+    cursor:pointer;
+    transition:border-color .12s ease, background .12s ease;
+  }
+  .opt:hover{ border-color:var(--teal); }
+  .opt:disabled{ cursor:default; }
+  .opt.correct{
+    border-color:var(--good);
+    background:var(--good-bg);
+    color:var(--good);
+    font-weight:600;
+  }
+  .opt.incorrect{
+    border-color:var(--bad);
+    background:var(--bad-bg);
+    color:var(--bad);
+    font-weight:600;
+  }
+  .feedback{
+    margin-top:10px;
+    font-size:14px;
+    line-height:1.5;
+    padding:10px 12px;
+    border-radius:8px;
+    display:none;
+  }
+  .feedback.show{ display:block; }
+  .feedback.good{ background:var(--good-bg); color:var(--good); }
+  .feedback.bad{ background:var(--bad-bg); color:var(--bad); }
+
+  .score-bar{
+    margin-top:20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .score-bar .txt{ font-size:14px; color:var(--ink-soft); }
+  .score-bar .val{ font-weight:800; color:var(--teal-dark); font-size:16px; }
+
+  footer{
+    margin-top:30px;
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:12.5px;
+  }
+
+  @media (max-width:420px){
+    .box{ width:52px; height:52px; font-size:17px; }
+    .rail{ width:8px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <span class="eyebrow">Lesson 1 · Arduino Arrays</span>
+    <h1>Understanding Array Indexing</h1>
+    <p class="sub">Arrays let a program store many related values under one name. Let's look at a list of temperature readings and learn how Arduino keeps track of each one.</p>
+  </header>
+
+  <section class="card">
+    <div class="code">int temperatures[<span class="num">5</span>] = {<span class="num">28</span>, <span class="num">29</span>, <span class="num">30</span>, <span class="num">31</span>, <span class="num">29</span>};</div>
+    <p class="explain">This line creates an array called <strong>temperatures</strong> that holds <strong>5</strong> whole numbers. Each value in the array has a position, called an <strong>index</strong>. <strong>In Arduino (and most programming languages), indexing starts at 0 — not 1.</strong> So the first temperature is at index 0, the second at index 1, and so on, up to index 4 for the fifth and last value.</p>
+  </section>
+
+  <section class="card">
+    <h2>Tap a value to explore it</h2>
+    <p class="h2-note">Each box below is one element of the <code>temperatures</code> array. Click on one to see its index and value.</p>
+
+    <div class="array-shell">
+      <div class="array-row" id="arrayRow"></div>
+    </div>
+
+    <div class="readout" id="readout">Click any box above to see its index and value here.</div>
+  </section>
+
+  <section class="card">
+    <h2>Check your understanding</h2>
+    <p class="h2-note">Three quick questions. Pick an answer to get instant feedback.</p>
+
+    <div id="quiz"></div>
+
+    <div class="score-bar">
+      <span class="txt">Your score</span>
+      <span class="val" id="scoreVal">0 / 3</span>
+    </div>
+  </section>
+
+  <footer>Grade 10 Computer · Arduino Arrays · Lesson 1</footer>
+</div>
+
+<script>
+(function(){
+  var values = [28, 29, 30, 31, 29];
+  var row = document.getElementById('arrayRow');
+  var readout = document.getElementById('readout');
+
+  values.forEach(function(val, idx){
+    if(idx > 0){
+      var rail = document.createElement('div');
+      rail.className = 'rail';
+      row.appendChild(rail);
+    }
+    var cell = document.createElement('div');
+    cell.className = 'cell';
+
+    var idxLabel = document.createElement('div');
+    idxLabel.className = 'idx-label';
+    idxLabel.textContent = 'index ' + idx;
+
+    var box = document.createElement('button');
+    box.className = 'box';
+    box.type = 'button';
+    box.textContent = val;
+    box.setAttribute('aria-label', 'temperatures index ' + idx + ', value ' + val);
+
+    box.addEventListener('click', function(){
+      document.querySelectorAll('.box').forEach(function(b){ b.classList.remove('selected'); });
+      box.classList.add('selected');
+      readout.innerHTML = 'You clicked index <span class="hit">' + idx + '</span> → ' +
+        '<code>temperatures[' + idx + ']</code> = <span class="hit">' + val + '</span>' +
+        (idx === 0 ? ' — this is the <span class="hit">first</span> element.' :
+         idx === values.length - 1 ? ' — this is the <span class="hit">last</span> element.' : '.');
+    });
+
+    cell.appendChild(idxLabel);
+    cell.appendChild(box);
+    row.appendChild(cell);
+  });
+
+  // Quiz
+  var questions = [
+    {
+      q: "What is the index of the first element in any Arduino array?",
+      options: ["1", "0", "-1", "It depends on the array"],
+      correct: 1,
+      feedbackGood: "Right! Arduino arrays always start counting from index 0.",
+      feedbackBad: "Not quite — in Arduino, array indexing always starts at 0, not 1."
+    },
+    {
+      q: "In int temperatures[5] = {28, 29, 30, 31, 29};, what is the value of temperatures[2]?",
+      options: ["28", "29", "30", "31"],
+      correct: 2,
+      feedbackGood: "Correct! Index 2 is the third element — counting 0, 1, 2 — which is 30.",
+      feedbackBad: "Not quite. Count from 0: index 0 is 28, index 1 is 29, index 2 is 30."
+    },
+    {
+      q: "This array stores 5 values. What is the index of the last element?",
+      options: ["5", "4", "6", "It has no last index"],
+      correct: 1,
+      feedbackGood: "Exactly! With 5 elements, the last index is always size − 1, which is 4.",
+      feedbackBad: "Not quite. With 5 elements (indices 0–4), the last index is size − 1 = 4."
+    }
+  ];
+
+  var quizEl = document.getElementById('quiz');
+  var scoreVal = document.getElementById('scoreVal');
+  var score = 0;
+  var answered = 0;
+
+  questions.forEach(function(item, qi){
+    var card = document.createElement('div');
+    card.className = 'card q-card';
+
+    var title = document.createElement('div');
+    title.className = 'q-title';
+    title.innerHTML = '<span class="q-num">' + (qi+1) + '</span>' + item.q;
+    card.appendChild(title);
+
+    var opts = document.createElement('div');
+    opts.className = 'opts';
+
+    var feedback = document.createElement('div');
+    feedback.className = 'feedback';
+
+    item.options.forEach(function(optText, oi){
+      var btn = document.createElement('button');
+      btn.className = 'opt';
+      btn.type = 'button';
+      btn.textContent = optText;
+
+      btn.addEventListener('click', function(){
+        var allBtns = opts.querySelectorAll('.opt');
+        allBtns.forEach(function(b){ b.disabled = true; });
+
+        if(oi === item.correct){
+          btn.classList.add('correct');
+          feedback.className = 'feedback show good';
+          feedback.textContent = item.feedbackGood;
+          score++;
+        } else {
+          btn.classList.add('incorrect');
+          allBtns[item.correct].classList.add('correct');
+          feedback.className = 'feedback show bad';
+          feedback.textContent = item.feedbackBad;
+        }
+        answered++;
+        scoreVal.textContent = score + ' / ' + questions.length;
+      });
+
+      opts.appendChild(btn);
+    });
+
+    card.appendChild(opts);
+    card.appendChild(feedback);
+    quizEl.appendChild(card);
+  });
+})();
+</script>
+</body>
+</html>
