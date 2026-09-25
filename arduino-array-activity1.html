@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Activity #1: Access &amp; Change Array Elements</title>
+<style>
+  :root{
+    --bg:#EEF3F4; --panel:#FFFFFF; --ink:#16323A; --ink-soft:#4B6067;
+    --teal:#00838F; --teal-dark:#005F6B; --amber:#F5A623;
+    --good:#2E7D32; --good-bg:#E8F5E9; --bad:#C62828; --bad-bg:#FDECEA;
+    --rail:#D8E3E4;
+    --code-bg:#0F2A30; --code-ink:#CFEFEA; --code-num:#8FD8CE;
+    --code-str:#FFD98E; --code-cm:#6FA3A8; --code-kw:#7FB8FF; --code-fn:#F2A65A;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --bg:#0E1B1E; --panel:#132A2E; --ink:#EAF4F4; --ink-soft:#A9C2C4; --rail:#274347; }
+  }
+  :root[data-theme="dark"]{ --bg:#0E1B1E; --panel:#132A2E; --ink:#EAF4F4; --ink-soft:#A9C2C4; --rail:#274347; }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  .wrap{ max-width:820px; margin:0 auto; padding:26px 18px 60px; }
+  .badge{
+    display:inline-block; font-size:13px; font-weight:800; letter-spacing:.03em;
+    color:#fff; background:var(--teal); padding:5px 12px; border-radius:8px; margin-bottom:10px;
+  }
+  h1{ font-size:clamp(20px,4.5vw,27px); margin:0 0 6px; font-weight:800; }
+  .sub{ color:var(--ink-soft); font-size:15px; margin:0 0 20px; line-height:1.5; }
+  .card{ background:var(--panel); border-radius:14px; padding:18px; box-shadow:0 1px 3px rgba(15,42,48,.08); margin-bottom:18px; }
+  .legend{ font-size:14px; line-height:1.6; color:var(--ink-soft); }
+  .legend b{ color:var(--ink); }
+  .legend .chip{ display:inline-block; background:rgba(0,131,143,.1); color:var(--teal-dark); padding:2px 8px; border-radius:6px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; margin:0 2px; }
+
+  .code{
+    background:var(--code-bg); color:var(--code-ink); border-radius:12px;
+    padding:16px 16px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:13.5px; line-height:1.85; overflow-x:auto; white-space:pre;
+  }
+  .kw{ color:var(--code-kw); } .str{ color:var(--code-str); } .num{ color:var(--code-num); }
+  .cm{ color:var(--code-cm); } .fn{ color:var(--code-fn); }
+
+  input.blank{
+    width:26px; text-align:center; font-family:inherit; font-size:13.5px; font-weight:700;
+    background:#fff; color:var(--teal-dark); border:none; border-bottom:2px solid var(--amber);
+    border-radius:3px 3px 0 0; padding:1px 2px; outline:none;
+  }
+  input.blank:focus{ border-bottom-color:var(--teal); background:#fffdf5; }
+  input.blank.correct{ border-bottom-color:var(--good); background:var(--good-bg); color:var(--good); }
+  input.blank.incorrect{ border-bottom-color:var(--bad); background:var(--bad-bg); color:var(--bad); }
+
+  .controls{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:16px; }
+  button.btn{
+    border:none; border-radius:10px; padding:11px 18px; font-size:14.5px; font-weight:700;
+    cursor:pointer; font-family:inherit;
+  }
+  .btn.primary{ background:var(--teal); color:#fff; }
+  .btn.primary:hover{ background:var(--teal-dark); }
+  .btn.ghost{ background:transparent; color:var(--ink-soft); border:1.5px solid var(--rail); }
+  .btn.ghost:hover{ border-color:var(--teal); color:var(--teal-dark); }
+
+  .result{
+    margin-top:14px; padding:12px 14px; border-radius:10px; font-size:14.5px; font-weight:600; display:none;
+  }
+  .result.show{ display:block; }
+  .result.good{ background:var(--good-bg); color:var(--good); }
+  .result.mixed{ background:var(--bad-bg); color:var(--bad); }
+
+  footer{ text-align:center; color:var(--ink-soft); font-size:12.5px; margin-top:10px; }
+  @media (max-width:480px){ .code{ font-size:12px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="badge">ACTIVITY #1</span>
+  <h1>Access &amp; Change Array Elements</h1>
+  <p class="sub">Fill in the blanks to access and change array elements of different types (int, char, and String). Type the correct <b>index number</b> into each yellow box.</p>
+
+  <div class="card legend">
+    Remember: indexing always starts at <span class="chip">0</span>. For an array of size <span class="chip">n</span>, valid indexes run from <span class="chip">0</span> to <span class="chip">n-1</span>.
+  </div>
+
+  <div class="card">
+    <div class="code" id="codeBlock">
+<span class="kw">int</span> numbers[<span class="num">3</span>] = {<span class="num">5</span>, <span class="num">10</span>, <span class="num">15</span>};        <span class="cm">// Integer array</span>
+<span class="kw">char</span> letters[<span class="num">4</span>] = {<span class="str">'A'</span>, <span class="str">'B'</span>, <span class="str">'C'</span>, <span class="str">'D'</span>}; <span class="cm">// Character array</span>
+<span class="kw">String</span> words[<span class="num">3</span>] = {<span class="str">"apple"</span>, <span class="str">"banana"</span>, <span class="str">"cherry"</span>}; <span class="cm">// String array</span>
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  Serial.<span class="fn">begin</span>(<span class="num">9600</span>);
+
+  <span class="cm">// --- Accessing elements ---</span>
+  Serial.<span class="fn">println</span>(<span class="str">"Accessing array elements:"</span>);
+
+  Serial.<span class="fn">print</span>(<span class="str">"First number: "</span>);
+  Serial.<span class="fn">println</span>(numbers[<input class="blank" id="b1" data-answer="0" maxlength="2" inputmode="numeric">]); <span class="cm">// Fill in index for first element</span>
+
+  Serial.<span class="fn">print</span>(<span class="str">"Second letter: "</span>);
+  Serial.<span class="fn">println</span>(letters[<input class="blank" id="b2" data-answer="1" maxlength="2" inputmode="numeric">]); <span class="cm">// Fill in index for second element</span>
+
+  Serial.<span class="fn">print</span>(<span class="str">"Last word: "</span>);
+  Serial.<span class="fn">println</span>(words[<input class="blank" id="b3" data-answer="2" maxlength="2" inputmode="numeric">]); <span class="cm">// Fill in index for last element</span>
+
+  <span class="cm">// --- Changing elements ---</span>
+  Serial.<span class="fn">println</span>(<span class="str">"\nChanging array elements:"</span>);
+
+  numbers[<input class="blank" id="b4" data-answer="1" maxlength="2" inputmode="numeric">] = <span class="num">20</span>;     <span class="cm">// Change the second number</span>
+  letters[<input class="blank" id="b5" data-answer="2" maxlength="2" inputmode="numeric">] = <span class="str">'Z'</span>;    <span class="cm">// Change the third letter</span>
+  words[<input class="blank" id="b6" data-answer="0" maxlength="2" inputmode="numeric">] = <span class="str">"orange"</span>; <span class="cm">// Change the first word</span>
+
+  <span class="cm">// --- Print updated arrays ---</span>
+  Serial.<span class="fn">println</span>(<span class="str">"\nUpdated array values:"</span>);
+  <span class="cm">// --- Print updated numbers ---</span>
+  Serial.<span class="fn">println</span>(numbers[<input class="blank" id="b7" data-answer="0" maxlength="2" inputmode="numeric">]);
+  Serial.<span class="fn">println</span>(numbers[<input class="blank" id="b8" data-answer="1" maxlength="2" inputmode="numeric">]);
+  Serial.<span class="fn">println</span>(numbers[<input class="blank" id="b9" data-answer="2" maxlength="2" inputmode="numeric">]);
+
+  <span class="cm">// --- Print updated letters ---</span>
+  Serial.<span class="fn">println</span>(letters[<input class="blank" id="b10" data-answer="0" maxlength="2" inputmode="numeric">]);
+  Serial.<span class="fn">println</span>(letters[<input class="blank" id="b11" data-answer="1" maxlength="2" inputmode="numeric">]);
+  Serial.<span class="fn">println</span>(letters[<input class="blank" id="b12" data-answer="2" maxlength="2" inputmode="numeric">]);
+
+  <span class="cm">// --- Print updated words ---</span>
+  Serial.<span class="fn">println</span>(words[<input class="blank" id="b13" data-answer="0" maxlength="2" inputmode="numeric">]);
+  Serial.<span class="fn">println</span>(words[<input class="blank" id="b14" data-answer="1" maxlength="2" inputmode="numeric">]);
+  Serial.<span class="fn">println</span>(words[<input class="blank" id="b15" data-answer="2" maxlength="2" inputmode="numeric">]);
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="cm">// Nothing here for now</span>
+}</div>
+  </div>
+
+  <div class="controls">
+    <button class="btn primary" id="checkBtn">Check My Answers</button>
+    <button class="btn ghost" id="resetBtn">Reset</button>
+  </div>
+  <div class="result" id="result"></div>
+
+  <footer>Grade 10 Computer · Arduino Arrays · Activity 1</footer>
+</div>
+
+<script>
+(function(){
+  var blanks = Array.prototype.slice.call(document.querySelectorAll('input.blank'));
+  var result = document.getElementById('result');
+
+  function checkOne(inp){
+    var val = inp.value.trim();
+    var ans = inp.getAttribute('data-answer');
+    inp.classList.remove('correct','incorrect');
+    if(val === '') return null;
+    if(val === ans){ inp.classList.add('correct'); return true; }
+    inp.classList.add('incorrect'); return false;
+  }
+
+  blanks.forEach(function(inp){
+    inp.addEventListener('blur', function(){ checkOne(inp); });
+    inp.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ inp.blur(); } });
+  });
+
+  document.getElementById('checkBtn').addEventListener('click', function(){
+    var correctCount = 0, filled = 0;
+    blanks.forEach(function(inp){
+      var r = checkOne(inp);
+      if(r !== null) filled++;
+      if(r === true) correctCount++;
+    });
+    result.className = 'result show ' + (correctCount === blanks.length ? 'good' : 'mixed');
+    if(correctCount === blanks.length){
+      result.textContent = 'All 15 correct! You\'ve got array indexing down. 🎉';
+    } else {
+      result.textContent = 'Score: ' + correctCount + ' / ' + blanks.length + ' correct (' + filled + ' answered). Green boxes are right — fix the red ones and check again.';
+    }
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', function(){
+    blanks.forEach(function(inp){ inp.value=''; inp.classList.remove('correct','incorrect'); });
+    result.classList.remove('show');
+  });
+})();
+</script>
+</body>
+</html>
