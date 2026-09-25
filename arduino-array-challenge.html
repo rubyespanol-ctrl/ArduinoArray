@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Arduino Arrays: Practice Challenge</title>
+<style>
+  :root{
+    --bg:#EEF3F4; --panel:#FFFFFF; --ink:#16323A; --ink-soft:#4B6067;
+    --teal:#00838F; --teal-dark:#005F6B; --amber:#F5A623;
+    --good:#2E7D32; --good-bg:#E8F5E9; --bad:#C62828; --bad-bg:#FDECEA;
+    --rail:#D8E3E4;
+    --code-bg:#0F2A30; --code-ink:#CFEFEA; --code-num:#8FD8CE;
+    --code-str:#FFD98E; --code-cm:#6FA3A8; --code-kw:#7FB8FF; --code-fn:#F2A65A;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --bg:#0E1B1E; --panel:#132A2E; --ink:#EAF4F4; --ink-soft:#A9C2C4; --rail:#274347; }
+  }
+  :root[data-theme="dark"]{ --bg:#0E1B1E; --panel:#132A2E; --ink:#EAF4F4; --ink-soft:#A9C2C4; --rail:#274347; }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  .wrap{ max-width:760px; margin:0 auto; padding:26px 18px 90px; }
+  .badge{ display:inline-block; font-size:13px; font-weight:800; letter-spacing:.03em; color:#fff; background:var(--teal); padding:5px 12px; border-radius:8px; margin-bottom:10px; }
+  h1{ font-size:clamp(21px,4.5vw,28px); margin:0 0 6px; font-weight:800; }
+  .sub{ color:var(--ink-soft); font-size:15px; margin:0 0 20px; line-height:1.5; }
+
+  .qcard{ background:var(--panel); border-radius:14px; padding:18px; box-shadow:0 1px 3px rgba(15,42,48,.08); margin-bottom:16px; }
+  .qhead{ display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+  .qnum{ display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; background:var(--teal); color:#fff; font-size:12px; font-weight:800; flex:0 0 auto; }
+  .tag{ font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:var(--teal-dark); background:rgba(0,131,143,.1); padding:3px 9px; border-radius:20px; }
+  .qtext{ font-size:15px; font-weight:600; margin:2px 0 10px; line-height:1.5; }
+
+  .code{ background:var(--code-bg); color:var(--code-ink); border-radius:10px; padding:12px 14px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13px; line-height:1.65; overflow-x:auto; white-space:pre; margin-bottom:12px; }
+  .kw{ color:var(--code-kw); } .str{ color:var(--code-str); } .num{ color:var(--code-num); } .cm{ color:var(--code-cm); } .fn{ color:var(--code-fn); }
+
+  .opts{ display:flex; flex-direction:column; gap:8px; }
+  .opt{ text-align:left; padding:10px 13px; border-radius:10px; border:1.5px solid var(--rail); background:var(--panel); color:var(--ink); font-size:14px; font-family:ui-monospace,Menlo,Consolas,monospace; cursor:pointer; transition:border-color .12s ease; }
+  .opt:hover{ border-color:var(--teal); }
+  .opt:disabled{ cursor:default; }
+  .opt.correct{ border-color:var(--good); background:var(--good-bg); color:var(--good); font-weight:700; }
+  .opt.incorrect{ border-color:var(--bad); background:var(--bad-bg); color:var(--bad); font-weight:700; }
+
+  .feedback{ margin-top:10px; font-size:13.5px; line-height:1.5; padding:10px 12px; border-radius:8px; display:none; font-family:-apple-system,BlinkMacSystemFont,sans-serif; }
+  .feedback.show{ display:block; }
+  .feedback.good{ background:var(--good-bg); color:var(--good); }
+  .feedback.bad{ background:var(--bad-bg); color:var(--bad); }
+
+  .scorebar{ position:sticky; bottom:0; background:var(--panel); border-top:1px solid var(--rail); padding:12px 18px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 -2px 8px rgba(15,42,48,.06); border-radius:14px 14px 0 0; max-width:760px; margin:0 auto; }
+  .scorebar .txt{ font-size:13.5px; color:var(--ink-soft); }
+  .scorebar .val{ font-weight:800; color:var(--teal-dark); font-size:16px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="badge">PRACTICE CHALLENGE</span>
+  <h1>Arduino Arrays: Predict, Access &amp; Analyze</h1>
+  <p class="sub">13 questions on reading, changing, and reasoning about array elements. No loops are used anywhere — just plain lines of code. Pick an answer for instant feedback.</p>
+
+  <div id="quiz"></div>
+</div>
+
+<div class="scorebar">
+  <span class="txt">Your score</span>
+  <span class="val" id="scoreVal">0 / 13</span>
+</div>
+
+<script>
+(function(){
+  var questions = [
+    { tag:"Predict the Output",
+      code:'<span class="kw">int</span> scores[<span class="num">4</span>] = {<span class="num">70</span>, <span class="num">85</span>, <span class="num">90</span>, <span class="num">60</span>};\nSerial.<span class="fn">println</span>(scores[<span class="num">1</span>]);',
+      q:"What does this print to the Serial Monitor?",
+      options:["70","85","90","60"], correct:1,
+      good:"Right! Index 1 is the second element, which is 85.",
+      bad:"Not quite — index 1 means the second element, counting from 0. That's 85." },
+
+    { tag:"Access Index",
+      code:'<span class="kw">char</span> grades[<span class="num">5</span>] = {<span class="str">\'A\'</span>, <span class="str">\'B\'</span>, <span class="str">\'C\'</span>, <span class="str">\'D\'</span>, <span class="str">\'F\'</span>};',
+      q:"Which index would you use to access the letter 'D'?",
+      options:["2","3","4","5"], correct:1,
+      good:"Correct! 'D' is the 4th letter, and counting from 0 that's index 3.",
+      bad:"Not quite. Count from 0: A=0, B=1, C=2, D=3." },
+
+    { tag:"Predict the Output",
+      code:'<span class="kw">int</span> nums[<span class="num">3</span>] = {<span class="num">4</span>, <span class="num">8</span>, <span class="num">12</span>};\nSerial.<span class="fn">println</span>(nums[<span class="num">0</span>] + nums[<span class="num">2</span>]);',
+      q:"What number is printed?",
+      options:["12","16","8","20"], correct:1,
+      good:"Correct! nums[0] is 4 and nums[2] is 12, so 4 + 12 = 16.",
+      bad:"Not quite. nums[0] is 4 and nums[2] is 12 — add them: 4 + 12 = 16." },
+
+    { tag:"Change Index",
+      code:'<span class="kw">String</span> fruits[<span class="num">3</span>] = {<span class="str">"mango"</span>, <span class="str">"kiwi"</span>, <span class="str">"pear"</span>};\nfruits[<span class="num">1</span>] = <span class="str">"grape"</span>;\nSerial.<span class="fn">println</span>(fruits[<span class="num">1</span>]);',
+      q:"What gets printed after this code runs?",
+      options:["kiwi","grape","mango","pear"], correct:1,
+      good:"Yes! The assignment replaced index 1's value with \"grape\" before it was printed.",
+      bad:"Not quite. fruits[1] was reassigned to \"grape\" before the print statement ran." },
+
+    { tag:"Analyze the Code",
+      code:'<span class="kw">float</span> temps[<span class="num">6</span>] = {<span class="num">21.5</span>, <span class="num">22.0</span>, <span class="num">23.5</span>, <span class="num">20.0</span>, <span class="num">19.5</span>, <span class="num">24.0</span>};',
+      q:"What is the index of the last element in this array?",
+      options:["6","5","4","7"], correct:1,
+      good:"Correct! With 6 elements, the last index is always size − 1 = 5.",
+      bad:"Not quite. With 6 elements (indexes 0–5), the last index is size − 1 = 5." },
+
+    { tag:"True or False",
+      code:null,
+      q:"True or False: In Arduino, you can choose to start an array's index at 1 instead of 0 if you prefer.",
+      options:["True","False"], correct:1,
+      good:"Correct — false! Arduino array indexing always starts at 0, no exceptions.",
+      bad:"Actually, that's false. Arduino array indexing always starts at 0, no matter what." },
+
+    { tag:"Predict the Output",
+      code:'<span class="kw">int</span> vals[<span class="num">4</span>] = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>};\nvals[<span class="num">0</span>] = <span class="num">10</span>;\nvals[<span class="num">3</span>] = <span class="num">40</span>;\nSerial.<span class="fn">println</span>(vals[<span class="num">0</span>] + vals[<span class="num">3</span>]);',
+      q:"What number is printed?",
+      options:["11","44","50","14"], correct:2,
+      good:"Correct! vals[0] is now 10 and vals[3] is now 40, so 10 + 40 = 50.",
+      bad:"Not quite. Both values were changed first: vals[0]=10 and vals[3]=40, so 10 + 40 = 50." },
+
+    { tag:"Access Index",
+      code:'<span class="kw">String</span> colors[<span class="num">4</span>] = {<span class="str">"red"</span>, <span class="str">"blue"</span>, <span class="str">"green"</span>, <span class="str">"yellow"</span>};',
+      q:"Which line correctly prints \"green\"?",
+      options:["colors[1]","colors[2]","colors[3]","colors[0]"], correct:1,
+      good:"Correct! \"green\" is the 3rd item, which sits at index 2.",
+      bad:"Not quite. Count from 0: red=0, blue=1, green=2." },
+
+    { tag:"Analyze the Code",
+      code:'<span class="kw">int</span> data[<span class="num">3</span>] = {<span class="num">5</span>, <span class="num">15</span>, <span class="num">25</span>};\nSerial.<span class="fn">println</span>(data[<span class="num">3</span>]);',
+      q:"This array only holds 3 values (indexes 0–2). What happens when data[3] is accessed?",
+      options:["It prints 25 again","It prints an unpredictable / garbage value — index 3 is out of range","It prints 5","Arduino automatically fixes the index to 2"], correct:1,
+      good:"Exactly! Index 3 doesn't exist in this array — valid indexes are only 0, 1, and 2. Accessing out-of-range memory gives unreliable results.",
+      bad:"Not quite. This array's valid indexes are only 0–2. Index 3 goes out of bounds, so the result is unpredictable — Arduino won't stop you, but it's a bug." },
+
+    { tag:"Change Index",
+      code:'<span class="kw">char</span> letters[<span class="num">4</span>] = {<span class="str">\'W\'</span>, <span class="str">\'X\'</span>, <span class="str">\'Y\'</span>, <span class="str">\'Z\'</span>};\nletters[<span class="num">0</span>] = <span class="str">\'A\'</span>;\nletters[<span class="num">2</span>] = <span class="str">\'C\'</span>;',
+      q:"What are the array's values now, in order?",
+      options:["A, X, C, Z","A, X, Y, Z","W, X, C, Z","A, C, Y, Z"], correct:0,
+      good:"Correct! Only index 0 and index 2 changed — the rest stayed the same.",
+      bad:"Not quite. Only letters[0] became 'A' and letters[2] became 'C'; X and Z were never touched." },
+
+    { tag:"Predict the Output",
+      code:'<span class="kw">int</span> marks[<span class="num">5</span>] = {<span class="num">88</span>, <span class="num">92</span>, <span class="num">79</span>, <span class="num">95</span>, <span class="num">84</span>};\nSerial.<span class="fn">print</span>(<span class="str">"Third mark: "</span>);\nSerial.<span class="fn">println</span>(marks[<span class="num">2</span>]);',
+      q:"What is printed to the Serial Monitor?",
+      options:["Third mark: 79","Third mark: 92","Third mark: 3","Third mark: 95"], correct:0,
+      good:"Correct! Index 2 is the third element (88, 92, 79...), which is 79.",
+      bad:"Not quite. Index 2 is the third element: 88=0, 92=1, 79=2." },
+
+    { tag:"Analyze the Code",
+      code:'<span class="kw">String</span> subjects[<span class="num">4</span>] = {<span class="str">"Math"</span>, <span class="str">"Science"</span>, <span class="str">"English"</span>, <span class="str">"Filipino"</span>};',
+      q:"How many valid indexes does this array have, and what are they?",
+      options:["4 indexes: 1–4","4 indexes: 0–3","3 indexes: 0–2","5 indexes: 0–4"], correct:1,
+      good:"Correct! 4 elements means 4 valid indexes, numbered 0 through 3.",
+      bad:"Not quite. This array holds 4 elements, so the valid indexes are 0, 1, 2, and 3 — four indexes starting at 0." },
+
+    { tag:"Predict the Output",
+      code:'<span class="kw">int</span> temp[<span class="num">3</span>] = {<span class="num">30</span>, <span class="num">32</span>, <span class="num">34</span>};\ntemp[<span class="num">1</span>] = temp[<span class="num">1</span>] + <span class="num">5</span>;\nSerial.<span class="fn">println</span>(temp[<span class="num">1</span>]);',
+      q:"What number is printed?",
+      options:["32","37","34","5"], correct:1,
+      good:"Correct! temp[1] started at 32, then 5 was added: 32 + 5 = 37.",
+      bad:"Not quite. temp[1] was 32 before the line ran; adding 5 makes it 32 + 5 = 37." }
+  ];
+
+  var quizEl = document.getElementById('quiz');
+  var scoreVal = document.getElementById('scoreVal');
+  var score = 0;
+
+  questions.forEach(function(item, qi){
+    var card = document.createElement('div');
+    card.className = 'qcard';
+
+    var head = document.createElement('div');
+    head.className = 'qhead';
+    head.innerHTML = '<span class="qnum">' + (qi+1) + '</span><span class="tag">' + item.tag + '</span>';
+    card.appendChild(head);
+
+    if(item.code){
+      var codeDiv = document.createElement('div');
+      codeDiv.className = 'code';
+      codeDiv.innerHTML = item.code;
+      card.appendChild(codeDiv);
+    }
+
+    var qtext = document.createElement('div');
+    qtext.className = 'qtext';
+    qtext.textContent = item.q;
+    card.appendChild(qtext);
+
+    var opts = document.createElement('div');
+    opts.className = 'opts';
+    var feedback = document.createElement('div');
+    feedback.className = 'feedback';
+
+    item.options.forEach(function(optText, oi){
+      var btn = document.createElement('button');
+      btn.className = 'opt';
+      btn.type = 'button';
+      btn.textContent = optText;
+      btn.addEventListener('click', function(){
+        var allBtns = opts.querySelectorAll('.opt');
+        allBtns.forEach(function(b){ b.disabled = true; });
+        if(oi === item.correct){
+          btn.classList.add('correct');
+          feedback.className = 'feedback show good';
+          feedback.textContent = item.good;
+          score++;
+        } else {
+          btn.classList.add('incorrect');
+          allBtns[item.correct].classList.add('correct');
+          feedback.className = 'feedback show bad';
+          feedback.textContent = item.bad;
+        }
+        scoreVal.textContent = score + ' / ' + questions.length;
+      });
+      opts.appendChild(btn);
+    });
+
+    card.appendChild(opts);
+    card.appendChild(feedback);
+    quizEl.appendChild(card);
+  });
+})();
+</script>
+</body>
+</html>
